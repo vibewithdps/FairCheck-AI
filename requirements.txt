@@ -1,0 +1,6 @@
+streamlit
+pandas
+shap
+matplotlib
+firebase-admin
+scikit-learn

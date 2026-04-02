@@ -1,0 +1,11 @@
+# Firebase Security (CRITICAL: Do not remove)
+serviceAccountKey.json
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Local Environment/System files
+.DS_Store
+.venv/
+env/

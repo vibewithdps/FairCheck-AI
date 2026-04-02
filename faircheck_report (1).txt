@@ -1,0 +1,15 @@
+
+                FAIRCHECK AI TRANSPARENCY REPORT
+                --------------------------------
+                Team: Dipendra, Sakshi, Neha
+                Target Column: Target Column: (e.g.
+                Audited Group: Target Column: (e.g.
+                
+                RESULTS:
+                - Fairness Score (DI Ratio): 1.0
+                - Final Status: ✅ Fair
+                - Protected Attribute: (e.g. Success Rate: nan%
+                - None Success Rate: nan%
+                
+                Generated via FairCheck Dashboard.
+                
