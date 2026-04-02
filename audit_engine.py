@@ -3,17 +3,38 @@ from firebase_admin import credentials, db, initialize_app, _apps
 import shap
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
-import math  # New import for Advance-level numerical validation
+import math
+import streamlit as st  # Added to access Cloud Secrets
 
 def setup_firebase():
+    """
+    Professional Cloud-Ready Initialization.
+    Automatically switches between local JSON and Streamlit Secrets.
+    """
     if not _apps:
         try:
-            cred = credentials.Certificate("serviceAccountKey.json")
+            # 1. Check if running on Streamlit Cloud (using Secrets)
+            if "firebase" in st.secrets:
+                # Convert the Secret TOML data into a dictionary
+                key_dict = dict(st.secrets["firebase"])
+                
+                # CRITICAL: Fix the multi-line private key format for Google Auth
+                if "private_key" in key_dict:
+                    key_dict["private_key"] = key_dict["private_key"].replace("\\n", "\n")
+                
+                cred = credentials.Certificate(key_dict)
+            
+            # 2. Fallback for local testing on your MacBook
+            else:
+                cred = credentials.Certificate("serviceAccountKey.json")
+
             initialize_app(cred, {
                 'databaseURL': 'https://faircheck-ffe01-default-rtdb.firebaseio.com/'
             })
             return True
         except Exception as e:
+            # Displays the specific error in the sidebar for easier debugging
+            st.sidebar.error(f"Firebase Config Error: {str(e)}")
             return False
     return True
 
@@ -26,19 +47,16 @@ def run_fairness_audit(df, target, group_col, priv_val, unprivileged_value):
         unpriv_rate = df[df[group_col] == unprivileged_value][target].mean()
         
         # --- Advance Level Robustness: Handling Edge Cases (NaN/Inf) ---
-        # 1. Check if priv_rate is 0 to avoid division by zero (Infinity)
         if priv_rate == 0 or math.isnan(priv_rate):
             di_ratio = 0.0
         else:
             di_ratio = unpriv_rate / priv_rate
             
-        # 2. Final safety check for JSON compliance
         if math.isinf(di_ratio) or math.isnan(di_ratio):
             di_ratio = 0.0
             
         status = "✅ Fair" if 0.8 <= di_ratio <= 1.25 else "⚠️ Biased"
         
-        # Advance Level Addition: Statistical Parity Difference
         stat_parity = unpriv_rate - priv_rate
         if math.isnan(stat_parity):
             stat_parity = 0.0
@@ -53,8 +71,8 @@ def run_fairness_audit(df, target, group_col, priv_val, unprivileged_value):
             "group_audited": str(group_col)
         }
         
-        if _apps:
-            # Wrap Firebase call in a separate try-except to ensure UI still works
+        # Secure Firebase Logging
+        if setup_firebase(): 
             try:
                 db.reference('audit_logs').push(results)
             except Exception as fe:
@@ -64,19 +82,20 @@ def run_fairness_audit(df, target, group_col, priv_val, unprivileged_value):
     except Exception as e:
         return {"error": str(e)}
 
-# --- NEW ADVANCE LEVEL RESEARCH FUNCTIONS ---
-
 def generate_shap_explanation(df, target_col):
     """
-    Advance Level: Uses SHAP (Explainable AI) to identify feature importance.
-    This helps identify 'Proxy Variables' causing the bias.
+    Explainable AI (XAI) using SHAP values.
+    Identifies if 'Proxy Variables' are influencing biased outcomes.
     """
     try:
-        # Prepare data (dropping non-numeric for simple SHAP calculation)
+        # Prepare data: keep only numeric features for SHAP calculation
         X = df.drop(columns=[target_col]).select_dtypes(include=['number'])
         y = df[target_col]
         
-        # Train a fast diagnostic model
+        if X.empty:
+            return None
+
+        # Train diagnostic model (Random Forest)
         model = RandomForestClassifier(n_estimators=100, random_state=42)
         model.fit(X, y)
         
@@ -86,7 +105,7 @@ def generate_shap_explanation(df, target_col):
         
         # Generate Plot
         fig, ax = plt.subplots(figsize=(10, 6))
-        # shap_values[1] represents the positive outcome (e.g., Approved)
+        # Use index [1] for the positive outcome (e.g., 'Approved')
         shap.summary_plot(shap_values[1], X, show=False)
         plt.title("Explainable AI: Feature Impact on Decisions")
         plt.tight_layout()
