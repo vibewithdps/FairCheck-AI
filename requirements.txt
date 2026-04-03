@@ -1,6 +1,8 @@
 streamlit
 pandas
-shap
+numpy
+plotly
 matplotlib
-firebase-admin
+shap
 scikit-learn
+firebase-admin
