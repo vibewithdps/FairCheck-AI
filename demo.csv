@@ -1,0 +1,8 @@
+Record_ID,Age,Gender,Ethnicity,Income_USD,Loan_Amount,Credit_Score,Employment_Status,Loan_Approved
+1,24,Female,Minority,35000,12000,610,Employed,0
+2,48,Male,Majority,82000,35000,740,Employed,1
+3,21,Non-Binary,Minority,22000,5000,580,Unemployed,0
+4,35,Female,Majority,55000,20000,690,Employed,1
+5,60,Male,Minority,45000,10000,710,Retired,1
+...,...,...,...,...,...,...,...,...
+500,29,Female,Minority,41000,15000,630,Employed,0

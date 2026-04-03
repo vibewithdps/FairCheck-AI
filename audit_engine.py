@@ -4,7 +4,8 @@ import shap
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 import math
-import streamlit as st  # Added to access Cloud Secrets
+import numpy as np
+import streamlit as st 
 
 def setup_firebase():
     """
@@ -13,19 +14,14 @@ def setup_firebase():
     """
     if not _apps:
         try:
-            # 1. Check if running on Streamlit Cloud (using Secrets)
+            # Check if running on Streamlit Cloud with secrets
             if "firebase" in st.secrets:
-                # Convert the Secret TOML data into a dictionary
                 key_dict = dict(st.secrets["firebase"])
-                
-                # CRITICAL: Fix the multi-line private key format for Google Auth
                 if "private_key" in key_dict:
                     key_dict["private_key"] = key_dict["private_key"].replace("\\n", "\n")
-                
                 cred = credentials.Certificate(key_dict)
-            
-            # 2. Fallback for local testing on your MacBook
             else:
+                # Local development path
                 cred = credentials.Certificate("serviceAccountKey.json")
 
             initialize_app(cred, {
@@ -33,20 +29,26 @@ def setup_firebase():
             })
             return True
         except Exception as e:
-            # Displays the specific error in the sidebar for easier debugging
             st.sidebar.error(f"Firebase Config Error: {str(e)}")
             return False
     return True
 
 def run_fairness_audit(df, target, group_col, priv_val, unprivileged_value):
+    """
+    Calculates Disparate Impact Ratio and Statistical Parity.
+    Ensures 'Reduced Inequalities' (SDG 10) by auditing AI bias.
+    """
     try:
-        # Convert to numeric and handle missing values to avoid 'NaN' errors
         df[target] = pd.to_numeric(df[target], errors='coerce').fillna(0)
         
-        priv_rate = df[df[group_col] == priv_val][target].mean()
-        unpriv_rate = df[df[group_col] == unprivileged_value][target].mean()
+        # Calculate rates for the two groups
+        priv_df = df[df[group_col] == priv_val]
+        unpriv_df = df[df[group_col] == unprivileged_value]
         
-        # --- Advance Level Robustness: Handling Edge Cases (NaN/Inf) ---
+        priv_rate = priv_df[target].mean()
+        unpriv_rate = unpriv_df[target].mean()
+        
+        # --- Robustness: Handling Edge Cases ---
         if priv_rate == 0 or math.isnan(priv_rate):
             di_ratio = 0.0
         else:
@@ -55,6 +57,7 @@ def run_fairness_audit(df, target, group_col, priv_val, unprivileged_value):
         if math.isinf(di_ratio) or math.isnan(di_ratio):
             di_ratio = 0.0
             
+        # Status based on the 80% Rule (0.8 threshold)
         status = "✅ Fair" if 0.8 <= di_ratio <= 1.25 else "⚠️ Biased"
         
         stat_parity = unpriv_rate - priv_rate
@@ -71,7 +74,6 @@ def run_fairness_audit(df, target, group_col, priv_val, unprivileged_value):
             "group_audited": str(group_col)
         }
         
-        # Secure Firebase Logging
         if setup_firebase(): 
             try:
                 db.reference('audit_logs').push(results)
@@ -82,30 +84,63 @@ def run_fairness_audit(df, target, group_col, priv_val, unprivileged_value):
     except Exception as e:
         return {"error": str(e)}
 
+def calculate_reweighing_weights(df, target, group_col):
+    """
+    PhD-Level Mitigation Technique: 
+    Generates weights to balance the dataset before training.
+    """
+    try:
+        # Create a working copy to avoid modifying the original dataframe in memory
+        df_work = df.copy()
+        n = len(df_work)
+        n_pos = len(df_work[df_work[target] == 1])
+        n_neg = len(df_work[df_work[target] == 0])
+        
+        df_work['fairness_weight'] = 1.0 # Default weight
+        groups = df_work[group_col].unique()
+        
+        for g in groups:
+            n_g = len(df_work[df_work[group_col] == g])
+            # Observed counts
+            n_g_pos = len(df_work[(df_work[group_col] == g) & (df_work[target] == 1)])
+            n_g_neg = len(df_work[(df_work[group_col] == g) & (df_work[target] == 0)])
+            
+            # Expected counts for Statistical Parity
+            expected_pos = (n_g * n_pos) / n
+            expected_neg = (n_g * n_neg) / n
+            
+            # Calculate and assign weights (Expected / Observed)
+            if n_g_pos > 0:
+                df_work.loc[(df_work[group_col] == g) & (df_work[target] == 1), 'fairness_weight'] = expected_pos / n_g_pos
+            if n_g_neg > 0:
+                df_work.loc[(df_work[group_col] == g) & (df_work[target] == 0), 'fairness_weight'] = expected_neg / n_g_neg
+                
+        return df_work[['fairness_weight']]
+    except Exception as e:
+        print(f"Mitigation Calculation Error: {e}")
+        return None
+
 def generate_shap_explanation(df, target_col):
     """
     Explainable AI (XAI) using SHAP values.
-    Identifies if 'Proxy Variables' are influencing biased outcomes.
+    Identifies 'Proxy Variables' that might hide bias.
     """
     try:
-        # Prepare data: keep only numeric features for SHAP calculation
+        # Optimization: Filter to numeric for Random Forest processing
         X = df.drop(columns=[target_col]).select_dtypes(include=['number'])
         y = df[target_col]
         
         if X.empty:
             return None
 
-        # Train diagnostic model (Random Forest)
         model = RandomForestClassifier(n_estimators=100, random_state=42)
         model.fit(X, y)
         
-        # Calculate SHAP values
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(X)
         
-        # Generate Plot
         fig, ax = plt.subplots(figsize=(10, 6))
-        # Use index [1] for the positive outcome (e.g., 'Approved')
+        # Use class 1 results for binary classification visualization
         shap.summary_plot(shap_values[1], X, show=False)
         plt.title("Explainable AI: Feature Impact on Decisions")
         plt.tight_layout()

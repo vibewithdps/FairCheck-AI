@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
-from audit_engine import setup_firebase, run_fairness_audit, generate_shap_explanation 
+# Added calculate_reweighing_weights to the import line
+from audit_engine import setup_firebase, run_fairness_audit, generate_shap_explanation, calculate_reweighing_weights 
 import datetime
 import os  
+import plotly.express as px  # Added for the new Bias Map
 
 # 1. Page Configuration
 st.set_page_config(page_title="FairCheck AI", layout="wide")
@@ -92,9 +94,15 @@ st.markdown(f"**Team Members:** Dipendra Pratap Singh, Sakshi Chauhan, Neha Yada
 uploaded_file = st.file_uploader("Upload your Dataset (CSV)", type="csv")
 
 if uploaded_file:
-    data = pd.read_csv(uploaded_file)
+    # Optimization: Loading data with caching to prevent the 'Oh No' error
+    @st.cache_data
+    def load_data(file):
+        return pd.read_csv(file)
+        
+    data = load_data(uploaded_file)
     
     st.subheader("📊 Dataset Overview")
+    # Displaying first 10 records as requested for quick overview
     st.dataframe(data.head(10), use_container_width=True)
 
     st.divider()
@@ -128,17 +136,47 @@ if uploaded_file:
                 res2.metric("Conclusion", report['status'])
                 res3.metric("Success Gap", f"{report['unpriv_group_success']} vs {report['priv_group_success']}")
                 
-                # 2. Visualization
-                chart_data = pd.DataFrame({
-                    "Group": [priv_val, unpriv_val],
-                    "Success Rate (%)": [
-                        float(report['priv_group_success'].strip('%')), 
-                        float(report['unpriv_group_success'].strip('%'))
-                    ]
-                })
-                st.bar_chart(chart_data, x="Group", y="Success Rate (%)")
+                # --- NEW: FAIRNESS PROGRESS BAR ---
+                st.write(f"**Fairness Threshold (Goal: > 0.8)**")
+                score_val = float(report['score'])
+                st.progress(min(score_val, 1.0), text=f"Current Score: {score_val}")
 
-                # --- PHD-LEVEL RESEARCH SECTION ---
+                # --- NEW: VISUAL ANALYSIS & MITIGATION TABS ---
+                st.subheader("📈 Analysis & Mitigation")
+                # Added a third tab for Mitigation
+                tab1, tab2, tab3 = st.tabs(["Group Success Rates", "Correlation Audit", "🛠️ Bias Mitigation"])
+                
+                with tab1:
+                    chart_data = pd.DataFrame({
+                        "Group": [priv_val, unpriv_val],
+                        "Success Rate (%)": [
+                            float(report['priv_group_success'].strip('%')), 
+                            float(report['unpriv_group_success'].strip('%'))
+                        ]
+                    })
+                    st.bar_chart(chart_data, x="Group", y="Success Rate (%)")
+                
+                with tab2:
+                    st.write("Distribution of Decisions across the Protected Group")
+                    fig_bias = px.histogram(data, x=group, color=target, barmode='group',
+                    title=f"Decision Distribution: {group}",
+                    color_discrete_sequence=px.colors.qualitative.Pastel)
+                    st.plotly_chart(fig_bias, use_container_width=True)
+
+                with tab3:
+                    st.markdown("### Pre-processing: Re-weighing Strategy")
+                    st.info("This algorithm calculates weights to balance the dataset before training, ensuring 'Statistical Parity'.")
+                    if st.button("Generate Fairness Weights"):
+                        # Calling the function from audit_engine.py
+                        weights_df = calculate_reweighing_weights(data, target, group)
+                        if weights_df is not None:
+                            st.success("Weights generated successfully!")
+                            st.dataframe(weights_df.head(10), use_container_width=True)
+                            st.caption("Apply these weights to your training data to mitigate bias.")
+                        else:
+                            st.error("Weight calculation failed. Check your dataset columns.")
+
+                # --- ADVANCED RESEARCH SECTION ---
                 st.divider()
                 st.subheader("🔬 Advanced Research Metrics")
                 

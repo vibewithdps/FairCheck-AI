@@ -1,0 +1,51 @@
+Record_ID,Age,Gender,Ethnicity,Income_USD,Loan_Amount,Credit_Score,Employment_Status,Education,Marital_Status,Loan_Approved
+1,24,Female,Minority,35000,12000,610,Employed,Bachelor,Single,0
+2,48,Male,Majority,82000,35000,740,Employed,Master,Married,1
+3,21,Non-Binary,Minority,22000,5000,580,Unemployed,High School,Single,0
+4,35,Female,Majority,55000,20000,690,Employed,Bachelor,Married,1
+5,60,Male,Minority,45000,10000,710,Retired,PhD,Divorced,1
+6,28,Female,Minority,32000,8000,600,Employed,Associate,Single,0
+7,41,Male,Majority,68000,25000,720,Employed,Master,Married,1
+8,22,Male,Minority,29000,7000,640,Student,High School,Single,0
+9,55,Female,Majority,95000,50000,800,Self-Employed,PhD,Married,1
+10,30,Non-Binary,Majority,48000,15000,670,Employed,Bachelor,Single,1
+11,26,Female,Minority,38000,11000,620,Employed,Bachelor,Single,0
+12,52,Male,Majority,71000,30000,730,Employed,Master,Married,1
+13,19,Male,Minority,18000,3000,550,Unemployed,High School,Single,0
+14,44,Female,Majority,60000,22000,700,Employed,Bachelor,Divorced,1
+15,33,Male,Minority,42000,14000,660,Employed,Bachelor,Married,0
+16,29,Female,Majority,51000,17000,685,Employed,Master,Single,1
+17,37,Non-Binary,Minority,40000,13000,650,Self-Employed,Bachelor,Married,0
+18,58,Male,Majority,88000,40000,760,Employed,PhD,Married,1
+19,25,Female,Minority,31000,9000,615,Employed,Associate,Single,0
+20,46,Male,Minority,59000,21000,695,Employed,Bachelor,Married,1
+21,23,Female,Majority,34000,11500,630,Employed,Bachelor,Single,0
+22,40,Male,Majority,72000,28000,725,Employed,Master,Married,1
+23,31,Female,Minority,36000,12500,645,Employed,Bachelor,Single,0
+24,55,Male,Minority,50000,15000,705,Retired,Master,Divorced,1
+25,27,Non-Binary,Majority,49000,16000,675,Employed,Bachelor,Single,1
+26,43,Female,Minority,47000,18000,665,Employed,Bachelor,Married,0
+27,34,Male,Majority,65000,24000,715,Employed,Master,Married,1
+28,21,Female,Minority,25000,6000,590,Student,High School,Single,0
+29,50,Male,Minority,62000,20000,700,Employed,Bachelor,Married,1
+30,38,Female,Majority,58000,19000,705,Employed,Master,Divorced,1
+31,24,Male,Minority,30000,9500,610,Employed,Associate,Single,0
+32,49,Female,Majority,85000,38000,750,Employed,PhD,Married,1
+33,20,Non-Binary,Minority,21000,4000,570,Unemployed,High School,Single,0
+34,36,Male,Majority,56000,20500,695,Employed,Bachelor,Married,1
+35,62,Female,Minority,43000,9000,720,Retired,Master,Widowed,1
+36,29,Male,Minority,33000,8500,625,Employed,Bachelor,Single,0
+37,42,Female,Majority,70000,26000,730,Employed,Master,Married,1
+38,23,Male,Minority,28000,7500,635,Student,High School,Single,0
+39,56,Female,Majority,98000,55000,810,Self-Employed,PhD,Married,1
+40,31,Non-Binary,Majority,47000,14500,680,Employed,Bachelor,Single,1
+41,27,Female,Minority,37000,11000,625,Employed,Bachelor,Single,0
+42,53,Male,Majority,73000,31000,735,Employed,Master,Married,1
+43,20,Male,Minority,19000,3500,560,Unemployed,High School,Single,0
+44,45,Female,Majority,62000,23000,710,Employed,Bachelor,Divorced,1
+45,34,Male,Minority,44000,15000,670,Employed,Bachelor,Married,0
+46,30,Female,Majority,53000,18000,690,Employed,Master,Single,1
+47,38,Non-Binary,Minority,41000,13500,655,Self-Employed,Bachelor,Married,0
+48,59,Male,Majority,89000,41000,770,Employed,PhD,Married,1
+49,26,Female,Minority,32000,9500,620,Employed,Associate,Single,0
+50,47,Male,Minority,60000,22000,705,Employed,Bachelor,Married,1
