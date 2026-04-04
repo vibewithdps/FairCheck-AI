@@ -32,8 +32,10 @@ with st.sidebar:
 
     # Updated Team Members and Roles
     display_team_member("Dipendra Pratap Singh", "(Team Leader)", "dipendra.jpg")
+    display_team_member("Shreya Gupta", "(UX/UI Researcher)", "shreya.jpg")
     display_team_member("Sakshi Chauhan", "(Data Science)", "sakshi.jpg")
     display_team_member("Neha Yadav", "(Frontend/UI)", "neha.jpg")
+    
     
     st.divider()
     
@@ -88,7 +90,7 @@ with st.sidebar:
 # Main UI Header
 st.title("FairCheck: AI Transparency Dashboard")
 st.subheader("Ensuring Ethical & Unbiased Automated Decisions") 
-st.markdown(f"**Team Members:** Dipendra Pratap Singh, Sakshi Chauhan, Neha Yadav")
+st.markdown(f"**Team Members:** Dipendra Pratap Singh, Shreya Gupta, Sakshi Chauhan, Neha Yadav")
 
 # 3. File Upload Section
 uploaded_file = st.file_uploader("Upload your Dataset (CSV)", type="csv")
