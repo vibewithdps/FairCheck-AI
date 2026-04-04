@@ -36,7 +36,6 @@ with st.sidebar:
     display_team_member("Sakshi Chauhan", "(Data Science)", "sakshi.jpg")
     display_team_member("Neha Yadav", "(Frontend/UI)", "neha.jpg")
     
-    
     st.divider()
     
     # Firebase Status
@@ -90,6 +89,7 @@ with st.sidebar:
 # Main UI Header
 st.title("FairCheck: AI Transparency Dashboard")
 st.subheader("Ensuring Ethical & Unbiased Automated Decisions") 
+# VERIFIED: All 4 members included in header
 st.markdown(f"**Team Members:** Dipendra Pratap Singh, Shreya Gupta, Sakshi Chauhan, Neha Yadav")
 
 # 3. File Upload Section
@@ -204,12 +204,13 @@ if uploaded_file:
                 compliance_status = "Likely Compliant (Pass)" if is_fair else "Non-Compliant (Risk Found)"
                 action_plan = "✅ Maintain current monitoring." if is_fair else f"❌ URGENT: Re-examine training weights for the '{unpriv_val}' group."
 
+                # UPDATED: Included Shreya Gupta in the Team list for the professional report
                 report_text = f"""
 ====================================================
 🛡️ FAIRCHECK AI: OFFICIAL TRANSPARENCY AUDIT 🛡️
 ====================================================
 Generated on: {timestamp}
-Team: Dipendra Pratap Singh, Sakshi Chauhan, Neha Yadav
+Team: Dipendra Pratap Singh, Shreya Gupta, Sakshi Chauhan, Neha Yadav
 
 1. AUDIT SUMMARY
 ----------------------------------------------------
