@@ -5,7 +5,7 @@ def initialize_firebase():
     if not firebase_admin._apps:
         cred = credentials.Certificate("serviceAccountKey.json")
         firebase_admin.initialize_app(cred, {
-            'databaseURL': 'https://YOUR-PROJECT-ID.firebaseio.com/'
+            'databaseURL': 'https://faircheck-ai-default-rtdb.firebaseio.com/'
         })
 
 def push_audit_data(result):
