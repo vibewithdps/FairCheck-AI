@@ -1,17 +1,12 @@
 import firebase_admin
+import streamlit as st
 from firebase_admin import credentials, db
 
 def initialize_firebase():
     if not firebase_admin._apps:
-        cred = credentials.Certificate("serviceAccountKey.json")
+        # Streamlit automatically handles the PEM \n issues when reading from secrets
+        key_dict = dict(st.secrets["firebase"])
+        cred = credentials.Certificate(key_dict)
         firebase_admin.initialize_app(cred, {
             'databaseURL': 'https://faircheck-ai-default-rtdb.firebaseio.com/'
         })
-
-def push_audit_data(result):
-    ref = db.reference('audit_history')
-    ref.push(result)
-
-def get_audit_history():
-    ref = db.reference('audit_history')
-    return ref.get()
