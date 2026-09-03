@@ -5,20 +5,30 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 import math
 import numpy as np
-import streamlit as st 
+import os
+import base64
+from io import BytesIO
 
 def setup_firebase():
     """
-    Professional Cloud-Ready Initialization.
-    Automatically switches between local JSON and Streamlit Secrets.
+    Professional Cloud-Ready Initialization for FastAPI/Vercel.
     """
     if not _apps:
         try:
-            # Check if running on Streamlit Cloud with secrets
-            if "firebase" in st.secrets:
-                key_dict = dict(st.secrets["firebase"])
-                if "private_key" in key_dict:
-                    key_dict["private_key"] = key_dict["private_key"].replace("\\n", "\n")
+            # Check if running with ENV variables (Vercel)
+            if "FIREBASE_PRIVATE_KEY" in os.environ:
+                key_dict = {
+                    "type": os.environ.get("FIREBASE_TYPE", "service_account"),
+                    "project_id": os.environ.get("FIREBASE_PROJECT_ID"),
+                    "private_key_id": os.environ.get("FIREBASE_PRIVATE_KEY_ID"),
+                    "private_key": os.environ.get("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n"),
+                    "client_email": os.environ.get("FIREBASE_CLIENT_EMAIL"),
+                    "client_id": os.environ.get("FIREBASE_CLIENT_ID"),
+                    "auth_uri": os.environ.get("FIREBASE_AUTH_URI", "https://accounts.google.com/o/oauth2/auth"),
+                    "token_uri": os.environ.get("FIREBASE_TOKEN_URI", "https://oauth2.googleapis.com/token"),
+                    "auth_provider_x509_cert_url": os.environ.get("FIREBASE_AUTH_PROVIDER_X509_CERT_URL", "https://www.googleapis.com/oauth2/v1/certs"),
+                    "client_x509_cert_url": os.environ.get("FIREBASE_CLIENT_X509_CERT_URL")
+                }
                 cred = credentials.Certificate(key_dict)
             else:
                 # Local development path
@@ -29,7 +39,7 @@ def setup_firebase():
             })
             return True
         except Exception as e:
-            st.sidebar.error(f"Firebase Config Error: {str(e)}")
+            print(f"Firebase Config Error: {str(e)}")
             return False
     return True
 
@@ -157,7 +167,14 @@ def generate_shap_explanation(df, target_col):
         plt.title("Explainable AI: Feature Impact on Decisions")
         plt.tight_layout()
         
-        return fig
+        # Save to buffer
+        buf = BytesIO()
+        fig.savefig(buf, format="png")
+        plt.close(fig)
+        buf.seek(0)
+        
+        # Encode as base64
+        return base64.b64encode(buf.read()).decode('utf-8')
     except Exception as e:
         print(f"SHAP Error: {e}")
         return None
