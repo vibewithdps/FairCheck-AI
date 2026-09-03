@@ -1,6 +1,4 @@
-fastapi
-python-multipart
-uvicorn
+streamlit
 pandas
 numpy
 plotly
