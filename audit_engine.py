@@ -18,7 +18,17 @@ def setup_firebase():
             if "firebase" in st.secrets:
                 key_dict = dict(st.secrets["firebase"])
                 if "private_key" in key_dict:
-                    key_dict["private_key"] = key_dict["private_key"].replace("\\n", "\n")
+                    # Fix multi-line string or escaped newline issues commonly found in TOML
+                    raw_key = key_dict["private_key"]
+                    # If it has literal backslash-n, replace them with actual newlines
+                    fixed_key = raw_key.replace("\\n", "\n")
+                    # Ensure standard PEM format
+                    if "-----BEGIN PRIVATE KEY-----" in fixed_key:
+                        # Extract just the PEM block in case there are surrounding quotes
+                        start = fixed_key.find("-----BEGIN PRIVATE KEY-----")
+                        end = fixed_key.find("-----END PRIVATE KEY-----") + len("-----END PRIVATE KEY-----")
+                        fixed_key = fixed_key[start:end]
+                    key_dict["private_key"] = fixed_key
                 cred = credentials.Certificate(key_dict)
             else:
                 # Local development path

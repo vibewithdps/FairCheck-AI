@@ -92,8 +92,8 @@ with st.sidebar:
 
     # Updated Team Members and Roles
     display_team_member("Dipendra Pratap Singh", "(Team Leader)", "Scs/dipendra.jpg")
-    display_team_member("Shreya Gupta", "(UX/UI Researcher)", "Scs/shreya.jpg")
     display_team_member("Sakshi Chauhan", "(Data Science)", "Scs/sakshi.jpg")
+    display_team_member("Shreya Gupta", "(UX/UI Researcher)", "Scs/shreya.jpg")
     display_team_member("Neha Yadav", "(Frontend/UI)", "Scs/neha.jpg")
     
     st.divider()
@@ -277,7 +277,7 @@ if uploaded_file:
 🛡️ FAIRCHECK AI: OFFICIAL TRANSPARENCY AUDIT 🛡️
 ====================================================
 Generated on: {timestamp}
-Team: Dipendra Pratap Singh, Shreya Gupta, Sakshi Chauhan, Neha Yadav
+Team: Dipendra Pratap Singh, Sakshi Chauhan, Shreya Gupta, Neha Yadav
 
 1. AUDIT SUMMARY
 ----------------------------------------------------
