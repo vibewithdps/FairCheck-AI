@@ -1,40 +1,100 @@
 import streamlit as st
 import pandas as pd
 # Added calculate_reweighing_weights to the import line
-from audit_engine import setup_firebase, run_fairness_audit, generate_shap_explanation, calculate_reweighing_weights 
+from audit_engine import setup_firebase, run_fairness_audit, generate_shap_explanation, calculate_reweighing_weights, fetch_audit_logs 
 import datetime
 import os  
 import plotly.express as px  # Added for the new Bias Map
 
 # 1. Page Configuration
-st.set_page_config(page_title="FairCheck AI", layout="wide")
+st.set_page_config(page_title="FairCheck AI", layout="wide", page_icon="⚖️")
+
+# Inject Custom CSS for Pro-Level UI
+st.markdown("""
+<style>
+    /* Main Background & Font styling */
+    .stApp {
+        background-color: #f8f9fa;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Make Team Profile Images Circular */
+    img[src*="data:image"] {
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e0e0e0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    /* Custom Headers */
+    h1, h2, h3 {
+        color: #1a1a2e;
+        font-weight: 700;
+    }
+    
+    /* Professional Card for File Upload */
+    div[data-testid="stFileUploader"] {
+        border: 2px dashed #4b6584;
+        border-radius: 10px;
+        padding: 20px;
+        background: #ffffff;
+    }
+    
+    /* Improve Sidebar look */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e0e0e0;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Beautiful Metric Cards */
+    div[data-testid="metric-container"] {
+        background-color: #ffffff;
+        border: 1px solid #e1e4e8;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        transition: transform 0.2s ease;
+    }
+    div[data-testid="metric-container"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- SIDEBAR CONTENT WITH LOGO AND UPDATED TEAM ---
 with st.sidebar:
     # Adding the Project Logo at the very top
-    if os.path.exists("logo.jpg"):
-        st.image("logo.jpg", use_container_width=True)
+    if os.path.exists("Scs/logo.jpg"):
+        st.image("Scs/logo.jpg", use_container_width=True)
     else:
         st.title(" FairCheck AI")
     
     st.markdown("### 👥 Project Team")
     
+    import base64
     # Function to display team member with photo and updated formatting
     def display_team_member(name, role, img_file):
-        col1, col2 = st.columns([1, 3])
+        col1, col2 = st.columns([1, 4])
         with col1:
             if os.path.exists(img_file):
-                st.image(img_file, width=50)
+                with open(img_file, "rb") as image_file:
+                    encoded_string = base64.b64encode(image_file.read()).decode()
+                st.markdown(
+                    f'<img src="data:image/jpeg;base64,{encoded_string}" style="border-radius: 50%; width: 50px; height: 50px; object-fit: cover; border: 2px solid #4b6584; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">',
+                    unsafe_allow_html=True
+                )
             else:
-                st.write("👤") 
+                st.markdown('<div style="width:50px; height:50px; border-radius:50%; background:#e0e0e0; display:flex; align-items:center; justify-content:center; font-size:24px;">👤</div>', unsafe_allow_html=True)
         with col2:
-            st.markdown(f"**{name}** \n*{role}*")
+            st.markdown(f"<div style='padding-top: 5px;'><strong>{name}</strong><br><span style='font-size:0.85em; color:gray;'>{role}</span></div>", unsafe_allow_html=True)
 
     # Updated Team Members and Roles
-    display_team_member("Dipendra Pratap Singh", "(Team Leader)", "dipendra.jpg")
-    display_team_member("Shreya Gupta", "(UX/UI Researcher)", "shreya.jpg")
-    display_team_member("Sakshi Chauhan", "(Data Science)", "sakshi.jpg")
-    display_team_member("Neha Yadav", "(Frontend/UI)", "neha.jpg")
+    display_team_member("Dipendra Pratap Singh", "(Team Leader)", "Scs/dipendra.jpg")
+    display_team_member("Shreya Gupta", "(UX/UI Researcher)", "Scs/shreya.jpg")
+    display_team_member("Sakshi Chauhan", "(Data Science)", "Scs/sakshi.jpg")
+    display_team_member("Neha Yadav", "(Frontend/UI)", "Scs/neha.jpg")
     
     st.divider()
     
@@ -87,10 +147,14 @@ with st.sidebar:
 # --- END OF SIDEBAR ---
 
 # Main UI Header
-st.title("FairCheck: AI Transparency Dashboard")
-st.subheader("Ensuring Ethical & Unbiased Automated Decisions") 
-# VERIFIED: All 4 members included in header
-st.markdown(f"**Team Members:** Dipendra Pratap Singh, Shreya Gupta, Sakshi Chauhan, Neha Yadav")
+st.markdown("""
+<div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 30px; border-radius: 15px; color: white; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);">
+    <h1 style="margin:0; font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">⚖️ FairCheck AI</h1>
+    <h3 style="margin-top: 5px; font-weight: 300; opacity: 0.9;">AI Transparency & Bias Mitigation Dashboard</h3>
+    <p style="margin-top: 15px; font-size: 1.1rem; opacity: 0.85;">Ensuring Ethical & Unbiased Automated Decisions</p>
+</div>
+""", unsafe_allow_html=True)
+
 
 # 3. File Upload Section
 uploaded_file = st.file_uploader("Upload your Dataset (CSV)", type="csv")
@@ -124,7 +188,10 @@ if uploaded_file:
         unpriv_val = st.selectbox("Unprivileged Value", remaining_vals)
 
     # 5. Run Button
-    if st.button("🔍 Run Fairness Audit"):
+    if st.button("🔍 Run Fairness Audit", type="primary"):
+        st.session_state.audit_run = True
+
+    if st.session_state.get("audit_run", False):
         with st.spinner("Analyzing decisions for bias..."):
             report = run_fairness_audit(data, target, group, priv_val, unpriv_val)
             
@@ -250,4 +317,32 @@ Generated via FairCheck AI Dashboard.
                 
                 st.success("✅ Audit results synced to Firebase and professional report is ready!")
 else:
-    st.warning("Please upload a CSV file to begin the audit.")
+    st.info("👆 Please upload a CSV file to begin the audit.")
+
+# --- DATABASE HISTORY SECTION ---
+st.divider()
+st.subheader("🗄️ Database: Audit History")
+st.write("View past fairness audits stored in the Firebase Realtime Database.")
+
+if st.button("Load Database History", type="secondary"):
+    with st.spinner("Fetching records from Firebase..."):
+        logs = fetch_audit_logs()
+        if logs:
+            # Convert dictionary of logs to a DataFrame for clean display
+            records = []
+            for key, val in logs.items():
+                if isinstance(val, dict):
+                    val['id'] = key
+                    records.append(val)
+            if records:
+                history_df = pd.DataFrame(records)
+                # Reorder columns for better readability if they exist
+                cols = ['id', 'group_audited', 'target_column', 'score', 'status', 'stat_parity', 'priv_group_success', 'unpriv_group_success']
+                existing_cols = [c for c in cols if c in history_df.columns]
+                history_df = history_df[existing_cols]
+                st.dataframe(history_df, use_container_width=True)
+                st.success(f"Loaded {len(records)} audit records from the database.")
+            else:
+                st.warning("Database connected, but no records found.")
+        else:
+            st.error("Failed to load records or database is empty.")

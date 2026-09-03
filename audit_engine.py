@@ -25,7 +25,7 @@ def setup_firebase():
                 cred = credentials.Certificate("serviceAccountKey.json")
 
             initialize_app(cred, {
-                'databaseURL': 'https://faircheck-ffe01-default-rtdb.firebaseio.com/'
+                'databaseURL': 'https://faircheck-ai-default-rtdb.firebaseio.com/'
             })
             return True
         except Exception as e:
@@ -83,6 +83,18 @@ def run_fairness_audit(df, target, group_col, priv_val, unprivileged_value):
         return results
     except Exception as e:
         return {"error": str(e)}
+
+def fetch_audit_logs():
+    """
+    Fetches past audit logs from Firebase.
+    """
+    try:
+        if setup_firebase():
+            ref = db.reference('audit_logs')
+            return ref.get()
+    except Exception as e:
+        print(f"Firebase Fetch Error: {e}")
+    return None
 
 def calculate_reweighing_weights(df, target, group_col):
     """

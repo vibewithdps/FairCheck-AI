@@ -9,3 +9,16 @@ __pycache__/
 .DS_Store
 .venv/
 env/
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Large media & presentations
+*.mp4
+*.pptx
+*.pdf
+*.png
+
+# Ignore all in Scs except the required jpgs and csvs
+Scs/*
+!Scs/*.jpg
+!Scs/*.csv
